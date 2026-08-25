@@ -3,6 +3,8 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
+import ChangePasswordPage from "./pages/ChangePasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import Dashboard from "./pages/Dashboard";
 import "./dashboard.css";
 
@@ -10,10 +12,24 @@ type View = "login" | "forgot-password";
 
 function AppContent() {
   const [view, setView] = useState<View>("login");
-  const { login, logout, userEmail } = useAuth();
+  const { login, logout, userEmail, mustChangePassword, clearMustChangePassword } = useAuth();
 
-  function handleLogin(email: string) {
-    login(email);
+  function handleLogin(email: string, accessToken: string, mustChange: boolean) {
+    login(email, accessToken, mustChange);
+  }
+
+  // Reset-password link is unauthenticated and must be reachable
+  // regardless of login state — check before the auth gate.
+  if (window.location.pathname === "/reset-password") {
+    return (
+      <ResetPasswordPage
+        onBackToLogin={() => {
+          window.history.replaceState({}, "", "/");
+          setView("login");
+          window.location.reload()
+        }}
+      />
+    );
   }
 
   const loginScreen =
@@ -25,7 +41,11 @@ function AppContent() {
 
   return (
     <ProtectedRoute fallback={loginScreen}>
-      <Dashboard userEmail={userEmail!} onLogout={logout} />
+      {mustChangePassword ? (
+        <ChangePasswordPage onSuccess={clearMustChangePassword} />
+      ) : (
+        <Dashboard userEmail={userEmail!} onLogout={logout} />
+      )}
     </ProtectedRoute>
   );
 }

@@ -1,5 +1,7 @@
-import { useState } from "react";
 
+import { useState } from "react";
+import { axiosInstance } from "../api/axiosInstance";
+import axios from "axios";
 interface ForgotPasswordProps {
   onBackToLogin: () => void;
 }
@@ -10,18 +12,32 @@ export default function ForgotPassword({ onBackToLogin }: ForgotPasswordProps) {
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+
     if (!email.trim()) {
       setError("Enter your email address.");
       return;
     }
+
     setSubmitting(true);
-    setTimeout(() => {
-      setSubmitting(false);
+
+    try {
+      // caalijg backend api
+      await axiosInstance.post("/auth/forgot-password", { email });
       setSent(true);
-    }, 500);
+    } catch (err: any) {
+      if (axios.isAxiosError(err)) {
+        // Extract detail message from FastAPI error response if available
+        const message = err.response?.data?.error || "Failed to request password reset. Try again.";
+        setError(message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (

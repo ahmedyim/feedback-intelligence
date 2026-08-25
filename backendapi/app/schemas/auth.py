@@ -8,8 +8,19 @@ class LoginResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str = Field(min_length=8)
+    
+class AdminResetPasswordRequest(BaseModel):
+    user_id: str
+    temporary_password: str = Field(min_length=8)
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
+    
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str = Field(min_length=8)
 
 class ForgotPasswordResponse(BaseModel):
     # Always return a generic message regardless of whether the email
