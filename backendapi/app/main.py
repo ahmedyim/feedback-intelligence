@@ -1,3 +1,11 @@
+import sys
+from pathlib import Path
+
+# Force project root and app directory into Python path for Vercel execution
+BASE_DIR = Path(__file__).resolve().parent
+sys.path.append(str(BASE_DIR))
+sys.path.append(str(BASE_DIR.parent))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import _rate_limit_exceeded_handler
@@ -8,7 +16,8 @@ from core.limiter import limiter
 from core.database import Base, engine, SessionLocal
 from core.seed import seed_admin
 from routers import feedback, auth
-from audit import router as audit_router
+import audit  # Changed from 'from audit import router as audit_router' to prevent attribute collisions
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Customer Feedback Intelligence Dashboard")
@@ -21,7 +30,7 @@ app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://feedback-intelligence-opal.vercel.app/"],
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -39,4 +48,4 @@ def on_startup():
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(feedback.router, prefix="/api")
-app.include_router(audit_router.router, prefix="/api")
+app.include_router(audit.router, prefix="/api")
