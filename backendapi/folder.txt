@@ -1,0 +1,32 @@
+app/
+├── main.py                 # creates the FastAPI() app, mounts routers, middleware
+├── core/
+│   ├── config.py            # settings (env vars) via pydantic-settings
+│   └── security.py          # JWT/password hashing helpers
+├── api/
+│   └── v1/
+│       ├── router.py        # combines all v1 routers into one
+│       └── endpoints/
+│           ├── users.py
+│           ├── items.py
+│           └── auth.py
+├── models/                  # SQLAlchemy ORM models (DB tables)
+│   ├── user.py
+│   └── item.py
+├── schemas/                 # Pydantic request/response models
+│   ├── user.py
+│   └── item.py
+├── crud/                    # DB read/write logic per resource
+│   ├── user.py
+│   └── item.py
+├── db/
+│   ├── session.py           # engine + SessionLocal + get_db()
+│   └── base.py              # imports all models so Alembic sees them
+├── dependencies.py          # shared Depends() functions (auth, pagination)
+├── tests/
+│   ├── test_users.py
+│   └── test_items.py
+├── alembic/                 # DB migrations
+│   └── versions/
+├── .env
+└── requirements.txt

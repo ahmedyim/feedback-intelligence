@@ -1,0 +1,99 @@
+:root {
+  /* ---- Fineto brand tokens ---- */
+  --bg: #F5F7F1;
+  --surface: #FFFFFF;
+  --surface-sunken: #EEF2EA;
+  --ink: #12201A;
+  --ink-soft: #3A473F;
+  --muted: #6C7A72;
+  --line: #DCE4D8;
+  --line-strong: #C4D0BF;
+
+  --brand-deep: #173822;
+  --brand: #1F6B3A;
+  --brand-bright: #3CAA53;
+  --brand-glow: #6FE07E;
+
+  --cat-bug: #D9482B;
+  --cat-bug-soft: #FBE7E1;
+  --cat-feature: #2F6FB2;
+  --cat-feature-soft: #E4EDF7;
+  --cat-complaint: #C4841B;
+  --cat-complaint-soft: #F7EDDA;
+  --cat-praise: #1F6B3A;
+  --cat-praise-soft: #E1EFE2;
+
+  --font-display: "Space Grotesk", "Inter", sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --shadow-card: 0 1px 2px rgba(18, 32, 26, 0.04), 0 8px 24px -12px rgba(18, 32, 26, 0.10);
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--line-strong) 1px, transparent 0);
+  background-size: 28px 28px;
+  background-position: -14px -14px;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--brand-glow);
+  color: var(--brand-deep);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand-bright);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+a {
+  color: var(--brand);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
