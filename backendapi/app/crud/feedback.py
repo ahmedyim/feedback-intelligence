@@ -1,8 +1,8 @@
 from typing import Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from models.feedback import FeedbackModel, CategoryEnum
-from schemas.feedback import FeedbackCreate
+from ..models.feedback import FeedbackModel, CategoryEnum
+from ..schemas.feedback import FeedbackCreate
 
 
 def create_feedback(db: Session, feedback: FeedbackCreate, category: CategoryEnum) -> FeedbackModel:

@@ -1,6 +1,6 @@
 # utils.py
 from fastapi_mail import FastMail, MessageSchema, MessageType
-from core.config import settings, mail_config
+from ..core.config import settings, mail_config
 
 async def send_reset_password_email(email_to: str, token: str):
     reset_url = f"https://app.fineto.fi/reset-password?token={token}"

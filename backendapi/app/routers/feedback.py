@@ -63,13 +63,13 @@ from fastapi import APIRouter, Depends, Query, Request, status
 from sqlalchemy.orm import Session
 from typing import Optional, List
 
-from core.database import get_db
-from core.limiter import limiter
-from models.feedback import CategoryEnum
-from schemas.feedback import FeedbackCreate, FeedbackResponse, FeedbackMetricsResponse
-from crud import feedback as feedback_crud
-from services.nlp_categorizer import categorize_feedback
-from audit.service import log_audit  # Import audit helper
+from ..core.database import get_db
+from ..core.limiter import limiter
+from ..models.feedback import CategoryEnum
+from ..schemas.feedback import FeedbackCreate, FeedbackResponse, FeedbackMetricsResponse
+from ..crud import feedback as feedback_crud
+from ..services.nlp_categorizer import categorize_feedback
+from ..audit.service import log_audit  # Import audit helper
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 

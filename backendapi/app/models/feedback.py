@@ -3,7 +3,7 @@ import uuid
 import enum
 from datetime import datetime,timezone
 from sqlalchemy import Column,String,Text,DateTime,Enum as SqlEnum
-from core.database import Base
+from ..core.database import Base
 
 class CategoryEnum(str,enum.Enum):
     BUG = "Bug"

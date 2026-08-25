@@ -1,6 +1,6 @@
 import uuid
 from sqlalchemy import Column, String, Boolean, Integer, DateTime
-from core.database import Base
+from ..core.database import Base
 
 class UserModel(Base):
     __tablename__ = "users"

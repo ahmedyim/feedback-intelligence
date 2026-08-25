@@ -1,15 +1,15 @@
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Request, Response
 from sqlalchemy.orm import Session
-from services.email import send_reset_password_email
-from core.database import get_db
-from core.limiter import limiter
-from schemas.auth import LoginRequest, ForgotPasswordRequest,ChangePasswordRequest,ResetPasswordRequest
-from crud import auth as auth_crud,user as crud_user
-from audit.service import log_audit
-from models.user import UserModel as User
-from schemas.auth import AdminResetPasswordRequest
-from core.deps import get_current_user  
+from ..services.email import send_reset_password_email
+from ..core.database import get_db
+from ..core.limiter import limiter
+from ..schemas.auth import LoginRequest, ForgotPasswordRequest,ChangePasswordRequest,ResetPasswordRequest
+from ..crud import auth as auth_crud,user as crud_user
+from ..audit.service import log_audit
+from ..models.user import UserModel as User
+from ..schemas.auth import AdminResetPasswordRequest
+from ..core.deps import get_current_user  
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 COOKIE_MAX_AGE = 7 * 24 * 60 * 60  # 7 days
