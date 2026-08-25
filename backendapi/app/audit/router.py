@@ -2,9 +2,9 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List
-from core.database import get_db
-from audit.models import AuditLog
-from audit.schemas import AuditLogResponse
+from ..core.database import get_db
+from .models import AuditLog
+from .schemas import AuditLogResponse
 
 router = APIRouter(prefix="/audit-logs", tags=["audit-logs"])
 

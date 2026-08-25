@@ -2,7 +2,7 @@
 from pydantic import BaseModel,UUID4,Field
 from datetime import datetime
 from typing import Optional
-from models.feedback import CategoryEnum
+from ..models.feedback import CategoryEnum
 
 
 class FeedbackCreate(BaseModel):

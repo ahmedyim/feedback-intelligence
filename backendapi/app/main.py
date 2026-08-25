@@ -4,11 +4,11 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from core.limiter import limiter
-from core.database import Base, engine, SessionLocal
-from core.seed import seed_admin
-from routers import feedback, auth
-from audit import router as audit_router
+from app.core.limiter import limiter
+from app.core.database import Base, engine, SessionLocal
+from app.core.seed import seed_admin
+from app.routers import feedback, auth
+from app.audit import router as audit_router
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Customer Feedback Intelligence Dashboard")

@@ -1,19 +1,23 @@
-from sqlalchemy import create_engine #connection pool
-from sqlalchemy.orm import declarative_base,sessionmaker
-from core.config import settings
-SQLALCHEMY_DB_URL=settings.DB_URL
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+from .config import settings
 
-# Cordinate db with python app
-engine=create_engine(SQLALCHEMY_DB_URL)
-SessionLocal=sessionmaker(autocommit=False,autoflush=False,bind=engine)
+# Resolves dynamic database URL from settings
+SQLALCHEMY_DB_URL = settings.get_database_url
 
-# the parent class for all orm to inherit
-Base=declarative_base()
+# Configure engine with connection pre-ping for Vercel serverless
+engine = create_engine(
+    SQLALCHEMY_DB_URL,
+    pool_pre_ping=True,
+    pool_recycle=300
+)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
 def get_db():
-    db=SessionLocal()
+    db = SessionLocal()
     try:
-        # provide session to the route
         yield db
     finally:
-        # to close session after request finishes
         db.close()

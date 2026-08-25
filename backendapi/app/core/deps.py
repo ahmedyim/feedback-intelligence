@@ -3,9 +3,9 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
-from core.database import get_db
-from core.security import verify_token  # this IS correct here — access tokens are JWTs
-from models.user import UserModel as User
+from .database import get_db
+from .security import verify_token  # this IS correct here — access tokens are JWTs
+from ..models.user import UserModel as User
 
 security_scheme = HTTPBearer()
 

@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 from jose import JWTError,jwt,ExpiredSignatureError
 
-from core.config import settings
-from models.user import UserModel
-from schemas.auth import LoginRequest, ForgotPasswordRequest, UpdatePasswordRequest,ChangePasswordRequest
+from ..core.config import settings
+from ..models.user import UserModel
+from ..schemas.auth import LoginRequest, ForgotPasswordRequest, UpdatePasswordRequest,ChangePasswordRequest
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

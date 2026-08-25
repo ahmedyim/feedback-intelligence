@@ -1,6 +1,6 @@
 from fastapi import Request
 from sqlalchemy.orm import Session
-from audit.models import AuditLog
+from .models import AuditLog
 
 def log_audit(
     db: Session,
