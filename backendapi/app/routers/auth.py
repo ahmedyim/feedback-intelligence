@@ -19,7 +19,7 @@ def set_refresh_cookie(response: Response, token: str):
         key="refresh_token",
         value=token,
         httponly=True,
-        # secure=True,        # enable in production (HTTPS)
+        secure=True,        # enable in production (HTTPS)
         samesite="strict",
         max_age=COOKIE_MAX_AGE,
         path="/",
