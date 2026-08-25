@@ -1,9 +1,13 @@
-# config.py
+from typing import Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from fastapi_mail import ConnectionConfig
 
 class Settings(BaseSettings):
-    DB_URL: str 
+    # Accept DB_URL, or fall back to Vercel's auto-injected variables
+    DB_URL: Optional[str] = None
+    POSTGRES_URL: Optional[str] = None
+    DATABASE_URL: Optional[str] = None
+
     SECRET_KEY: str 
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
@@ -24,12 +28,25 @@ class Settings(BaseSettings):
 
     model_config = SettingsConfigDict(
         env_file=".env",
-        env_file_encoding="utf-8"
+        env_file_encoding="utf-8",
+        extra="ignore"
     )
+
+    @property
+    def get_database_url(self) -> str:
+        # 1. Grab whichever variable is available
+        url = self.DB_URL or self.POSTGRES_URL or self.DATABASE_URL
+        if not url:
+            raise ValueError("No database URL found in environment variables!")
+
+        # 2. Convert postgres:// to postgresql:// for SQLAlchemy compatibility
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+            
+        return url
 
 settings = Settings()
 
-# Create ConnectionConfig using your settings instance
 mail_config = ConnectionConfig(
     MAIL_USERNAME=settings.MAIL_USERNAME,
     MAIL_PASSWORD=settings.MAIL_PASSWORD,
