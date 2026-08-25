@@ -5,10 +5,8 @@ from core.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
-
 
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
@@ -37,14 +35,17 @@ def create_refresh_token(
     return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
+
 def verify_token(token: str, expected_type: str = "access") -> dict | None:
-    """Decodes a token and verifies that its 'type' matches what is expected."""
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
         )
         if payload.get("type") != expected_type:
+            print(f"Type mismatch: expected {expected_type}, got {payload.get('type')}")
             return None
         return payload
-    except JWTError:
+    except JWTError as e:
+        print(f"JWT decode failed: {e}")  # ← this will tell you exactly what's wrong
         return None
+    

@@ -5,11 +5,11 @@ import secrets
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
-from jose import JWTError
+from jose import JWTError,jwt,ExpiredSignatureError
 
 from core.config import settings
 from models.user import UserModel
-from schemas.auth import LoginRequest, ForgotPasswordRequest, UpdatePasswordRequest
+from schemas.auth import LoginRequest, ForgotPasswordRequest, UpdatePasswordRequest,ChangePasswordRequest
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -28,6 +28,44 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
+
+def change_password(db: Session, user: UserModel, payload: ChangePasswordRequest) -> dict:
+    print(user.hashed_password)
+    if not verify_password(payload.current_password, user.hashed_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Current password is incorrect")
+
+    if payload.new_password == payload.current_password:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="New password must be different")
+
+    user.hashed_password = hash_password(payload.new_password)
+    user.must_change_password = False  # clears the forced-change flag
+    db.commit()
+
+    return {"message": "Password updated successfully."}
+
+
+
+
+def admin_reset_password(db: Session, user_id: str, temporary_password: str) -> dict:
+    """
+    Used by admin-only POST /admin/users/{user_id}/reset-password
+    Sets a temporary password and forces the user to change it on next login.
+    """
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    user.hashed_password = hash_password(temporary_password)
+    user.must_change_password = True
+
+    # Also revoke any existing session so old refresh tokens can't
+    # bypass the forced password change
+    user.refresh_token_hash = None
+    user.refresh_token_expires_at = None
+
+    db.commit()
+
+    return {"message": f"Password reset for {user.email}. User must change password on next login."}
 
 def create_access_token(user_id: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -135,12 +173,12 @@ def authenticate(db: Session, payload: LoginRequest) -> dict:
     user.refresh_token_expires_at = datetime.now(timezone.utc) + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
 
     db.commit()
-
     return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "refresh_token": refresh_token,  # raw value — router sets this as the HttpOnly cookie only, never re-exposed in JSON
-    }
+                "access_token": access_token,
+                "token_type": "bearer",
+                "refresh_token": refresh_token,
+                "must_change_password": user.must_change_password,
+            }
 
 
 def refresh_access_token(db: Session, raw_refresh_token: str) -> dict:
@@ -236,3 +274,39 @@ def update_password(db: Session, payload: UpdatePasswordRequest) -> dict:
     db.commit()
 
     return {"message": "Password updated successfully."}
+
+
+
+def reset_password(db: Session, payload) -> dict:
+    try:
+        decoded = jwt.decode(
+            payload.token,
+            settings.SECRET_KEY,
+            algorithms=[settings.ALGORITHM],
+        )
+    except ExpiredSignatureError:
+        raise HTTPException(status_code=400, detail="Reset link has expired. Please request a new one.")
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Reset link is invalid.")
+
+    if decoded.get("type") != "password_reset":
+        raise HTTPException(status_code=400, detail="Reset link is invalid.")
+
+    user_id = decoded.get("sub")
+    user = db.query(UserModel).filter(UserModel.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=400, detail="Reset link is invalid.")
+
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Account is inactive")
+
+    user.hashed_password = hash_password(payload.new_password)
+    user.must_change_password = False
+
+    # Invalidate any existing session — a leaked/old refresh token
+    # shouldn't survive a password reset.
+    user.refresh_token_hash = None
+    user.refresh_token_expires_at = None
+
+    db.commit()
+    return {"detail": "Password has been reset successfully."}

@@ -3,10 +3,12 @@ import { axiosInstance } from "../api/axiosInstance";
 import axios from "axios";
 
 interface LoginProps {
-  onLogin: (email: string) => void;
+  onLogin: (email: string, accessToken: string, mustChangePassword: boolean) => void;
   onForgotPassword: () => void;
 }
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function Login({ onLogin, onForgotPassword }: LoginProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,11 +30,13 @@ export default function Login({ onLogin, onForgotPassword }: LoginProps) {
 
     setSubmitting(true);
     try {
-      await axiosInstance.post("/auth/login", {
+      const res = await axiosInstance.post("/auth/login", {
         email: trimmedEmail,
         password,
       });
-      onLogin(trimmedEmail);
+
+      const { access_token, must_change_password } = res.data;
+      onLogin(trimmedEmail, access_token, must_change_password ?? false);
     } catch (err) {
       if (axios.isAxiosError(err)) {
         if (err.response?.status === 429) {

@@ -1,18 +1,23 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { axiosInstance } from "../api/axiosInstance";
+import { axiosInstance, setAccessToken as setApiAccessToken } from "../api/axiosInstance";
 
 interface AuthContextType {
   userEmail: string | null;
+  accessToken: string | null;
+  mustChangePassword: boolean;
   isAuthenticated: boolean;
   checkingAuth: boolean;
-  login: (email: string) => void;
+  login: (email: string, accessToken: string, mustChangePassword: boolean) => void;
   logout: () => Promise<void>;
+  clearMustChangePassword: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [accessToken, setAccessTokenState] = useState<string | null>(null);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
@@ -20,10 +25,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function checkSession() {
       try {
-        const res = await axiosInstance.get("/auth/me");
-        if (!cancelled) setUserEmail(res.data.email);
+        // /auth/me only confirms the refresh cookie is valid + who the user is.
+        // It does NOT give us a fresh access token, so we still need /auth/refresh.
+        const meRes = await axiosInstance.get("/auth/me");
+        if (cancelled) return;
+
+        const refreshRes = await axiosInstance.post("/auth/refresh");
+        if (cancelled) return;
+
+        setUserEmail(meRes.data.email);
+        setMustChangePassword(meRes.data.must_change_password)
+        setAccessTokenState(refreshRes.data.access_token);
+        setApiAccessToken(refreshRes.data.access_token);
+
       } catch {
-        if (!cancelled) setUserEmail(null);
+        if (!cancelled) {
+          setUserEmail(null);
+          setAccessTokenState(null);
+          setApiAccessToken(null);
+        }
       } finally {
         if (!cancelled) setCheckingAuth(false);
       }
@@ -35,8 +55,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  function login(email: string) {
+  function login(email: string, token: string, mustChange: boolean) {
     setUserEmail(email);
+    setAccessTokenState(token);
+    setApiAccessToken(token);
+    setMustChangePassword(mustChange);
+  }
+
+  function clearMustChangePassword() {
+    setMustChangePassword(false);
   }
 
   async function logout() {
@@ -46,6 +73,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // even if the server call fails, clear local state
     } finally {
       setUserEmail(null);
+      setAccessTokenState(null);
+      setApiAccessToken(null);
+      setMustChangePassword(false);
     }
   }
 
@@ -53,10 +83,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         userEmail,
-        isAuthenticated: !!userEmail,
+        accessToken,
+        mustChangePassword,
+        isAuthenticated: !!accessToken,
         checkingAuth,
         login,
         logout,
+        clearMustChangePassword,
       }}
     >
       {children}
