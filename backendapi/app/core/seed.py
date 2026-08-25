@@ -5,7 +5,6 @@ from .config import settings
 from sqlalchemy.orm import Session
 
 
-
 def seed_admin(db: Session) -> None:
     if get_user_by_email(db, settings.ADMIN_EMAIL):
         return
