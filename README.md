@@ -617,7 +617,7 @@ http://localhost:5173
 ---
 
 # 🌐 Production Configuration
-
+**email  admin@gmail.com    and password  Admin@1234**
 The deployed frontend communicates with the deployed FastAPI backend.
 
 ```text
