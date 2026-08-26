@@ -13,8 +13,9 @@
       "destination": "https://feedback-intelligence-backend.vercel.app/api/:path*"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
 }
+
