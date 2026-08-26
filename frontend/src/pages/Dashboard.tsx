@@ -63,10 +63,10 @@ export default function Dashboard({ userEmail, onLogout }: DashboardProps) {
             <FeedbackTable items={items} loading={itemsLoading} />
           </div>
 
-          <aside className="dashboard__secondary">
-            {stats && <CategoryDonut categories={stats.categories} />}
-            {sourceStats.length > 0 && <SourceBars sources={sourceStats} />}
-          </aside>
+        <aside className="dashboard__secondary">
+  {stats && <CategoryDonut categories={stats.category_counts} />}
+  {sourceStats.length > 0 && <SourceBars sources={sourceStats} />}
+</aside>
         </section>
       </main>
     </div>
