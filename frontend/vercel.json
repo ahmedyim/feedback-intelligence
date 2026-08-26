@@ -1,21 +1,20 @@
 {
   "rewrites": [
     {
-      "source": "/api/feedback",
+      "source": "/api/feedback/",
       "destination": "https://feedback-intelligence-backend.vercel.app/api/feedback/"
     },
     {
-      "source": "/api/feedback/:path*",
-      "destination": "https://feedback-intelligence-backend.vercel.app/api/feedback/:path*"
+      "source": "/api/feedback",
+      "destination": "https://feedback-intelligence-backend.vercel.app/api/feedback/"
     },
     {
       "source": "/api/:path*",
       "destination": "https://feedback-intelligence-backend.vercel.app/api/:path*"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ]
 }
-
