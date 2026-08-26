@@ -1,5 +1,5 @@
+import { useMemo } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import type { CategoryStat } from "../types/feedback";
 
 const COLOR: Record<string, string> = {
   Bug: "#D9482B",
@@ -8,8 +8,36 @@ const COLOR: Record<string, string> = {
   Praise: "#1F6B3A",
 };
 
-export default function CategoryDonut({ categories }: { categories: CategoryStat[] }) {
-  const total = categories.reduce((sum, c) => sum + c.count, 0);
+export interface CategoryDonutProps {
+  // Support both dictionary record from backend AND standard array format
+  categories?: Record<string, number> | Array<{ category: string; count: number; percentage?: number }>;
+}
+
+export default function CategoryDonut({ categories }: CategoryDonutProps) {
+  // Safe normalization: convert object payload to structured array
+  const categoryList = useMemo(() => {
+    if (!categories) return [];
+
+    if (Array.isArray(categories)) {
+      const grandTotal = categories.reduce((sum, c) => sum + (c.count || 0), 0);
+      return categories.map((c) => ({
+        category: c.category,
+        count: c.count,
+        percentage: c.percentage ?? (grandTotal > 0 ? Math.round((c.count / grandTotal) * 100) : 0),
+      }));
+    }
+
+    const entries = Object.entries(categories);
+    const grandTotal = entries.reduce((sum, [_, count]) => sum + count, 0);
+
+    return entries.map(([category, count]) => ({
+      category,
+      count,
+      percentage: grandTotal > 0 ? Math.round((count / grandTotal) * 100) : 0,
+    }));
+  }, [categories]);
+
+  const total = useMemo(() => categoryList.reduce((sum, c) => sum + c.count, 0), [categoryList]);
 
   return (
     <div className="donut-card">
@@ -17,7 +45,7 @@ export default function CategoryDonut({ categories }: { categories: CategoryStat
         <ResponsiveContainer width="100%" height={200}>
           <PieChart>
             <Pie
-              data={categories}
+              data={categoryList}
               dataKey="count"
               nameKey="category"
               innerRadius={58}
@@ -25,8 +53,8 @@ export default function CategoryDonut({ categories }: { categories: CategoryStat
               paddingAngle={3}
               strokeWidth={0}
             >
-              {categories.map((c) => (
-                <Cell key={c.category} fill={COLOR[c.category]} />
+              {categoryList.map((c) => (
+                <Cell key={c.category} fill={COLOR[c.category] ?? "#8884d8"} />
               ))}
             </Pie>
             <Tooltip
@@ -48,9 +76,9 @@ export default function CategoryDonut({ categories }: { categories: CategoryStat
       </div>
 
       <ul className="donut-card__legend">
-        {categories.map((c) => (
+        {categoryList.map((c) => (
           <li key={c.category}>
-            <span className="donut-card__swatch" style={{ background: COLOR[c.category] }} />
+            <span className="donut-card__swatch" style={{ background: COLOR[c.category] ?? "#8884d8" }} />
             <span className="donut-card__legend-name">{c.category}</span>
             <span className="donut-card__legend-pct">{c.percentage}%</span>
           </li>
